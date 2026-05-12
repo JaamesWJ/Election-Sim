@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Election Simulator — Admin</title>
+  <link rel="stylesheet" href="../css/admin.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- LOGIN GATE -->
+  <div id="login-screen" class="admin-screen active">
+    <div class="login-card">
+      <div class="login-logo">
+        <span class="bug-logo">★</span>
+        <span>ELECTION NETWORK</span>
+      </div>
+      <h2>Admin Access</h2>
+      <p>Enter your admin key to continue</p>
+      <input type="password" id="admin-key-input" placeholder="Admin key…" autocomplete="off" />
+      <button id="login-btn" class="btn-primary">Enter</button>
+      <p class="login-error" id="login-error"></p>
+    </div>
+  </div>
+
+  <!-- ADMIN DASHBOARD -->
+  <div id="admin-dashboard" class="admin-screen">
+    <aside class="admin-sidebar">
+      <div class="admin-logo">
+        <span class="bug-logo">★</span>
+        <span>ADMIN</span>
+      </div>
+      <nav class="admin-nav">
+        <button class="nav-btn active" data-tab="setup">⚙ Setup</button>
+        <button class="nav-btn" data-tab="states">🗺 States</button>
+        <button class="nav-btn" data-tab="parties">🏛 Parties & Candidates</button>
+        <button class="nav-btn" data-tab="modifiers">🎚 Modifiers</button>
+        <button class="nav-btn" data-tab="control">▶ Control</button>
+      </nav>
+      <div class="admin-status">
+        <div class="status-indicator" id="status-indicator">
+          <span class="status-dot offline"></span>
+          <span id="status-text">Offline</span>
+        </div>
+      </div>
+    </aside>
+
+    <main class="admin-main">
+
+      <!-- ═══ TAB: SETUP ═══ -->
+      <div class="tab-panel active" id="tab-setup">
+        <div class="panel-header">
+          <h1>Election Setup</h1>
+          <p>Configure your election's basic parameters</p>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group full">
+            <label>Election Name</label>
+            <input type="text" id="election-name" placeholder="e.g. 2024 General Election" />
+          </div>
+
+          <div class="form-group">
+            <label>Google Sheets Share URL</label>
+            <input type="url" id="sheets-url" placeholder="https://docs.google.com/spreadsheets/d/…" />
+            <small>Must be shared publicly or with link. The sheet from your Google Form responses.</small>
+          </div>
+
+          <div class="form-group">
+            <label>Sheet Tab Name <span class="hint">(usually "Form Responses 1")</span></label>
+            <input type="text" id="sheet-tab" value="Form Responses 1" />
+          </div>
+
+          <div class="form-group">
+            <label>Election Duration</label>
+            <div class="input-row">
+              <input type="number" id="election-duration" value="24" min="1" max="720" />
+              <select id="duration-unit">
+                <option value="hours">Hours</option>
+                <option value="minutes">Minutes</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Vote Drop Interval</label>
+            <div class="input-row">
+              <input type="number" id="drop-interval" value="1" min="1" />
+              <select id="interval-unit">
+                <option value="hours">Hours</option>
+                <option value="minutes">Minutes</option>
+              </select>
+            </div>
+            <small id="drop-count-preview">= 24 drops total</small>
+          </div>
+
+          <div class="form-group full">
+            <label>Election Levels Active (globally)</label>
+            <div class="checkbox-grid" id="global-levels">
+              <label class="cb-label"><input type="checkbox" value="president" checked> President</label>
+              <label class="cb-label"><input type="checkbox" value="senate"> Senate</label>
+              <label class="cb-label"><input type="checkbox" value="house"> House of Representatives</label>
+              <label class="cb-label"><input type="checkbox" value="governor"> Governor</label>
+              <label class="cb-label"><input type="checkbox" value="state_leg"> State Legislature</label>
+            </div>
+          </div>
+
+          <div class="form-group full">
+            <label>Player Vote Modifier <span class="hint">— how much impact player ballots have</span></label>
+            <div class="slider-row">
+              <input type="range" id="player-modifier" min="0" max="100" value="50" />
+              <span class="slider-val" id="player-modifier-val">50%</span>
+            </div>
+            <small>0% = player votes ignored entirely. 100% = player votes completely override simulated votes.</small>
+          </div>
+        </div>
+
+        <div class="panel-actions">
+          <button class="btn-primary" id="save-setup-btn">Save Setup</button>
+        </div>
+      </div>
+
+      <!-- ═══ TAB: STATES ═══ -->
+      <div class="tab-panel" id="tab-states">
+        <div class="panel-header">
+          <h1>States & Races</h1>
+          <p>Configure which states participate and which races they hold</p>
+        </div>
+
+        <div class="states-toolbar">
+          <button class="btn-secondary" id="add-state-btn">+ Add State</button>
+          <button class="btn-ghost" id="add-all-states-btn">Add All 50 States</button>
+          <input type="text" id="state-search" placeholder="Search states…" />
+        </div>
+
+        <div id="states-list" class="states-list">
+          <!-- State cards injected here -->
+        </div>
+
+        <!-- Add State Modal -->
+        <div class="modal" id="add-state-modal">
+          <div class="modal-card">
+            <h3>Add State / Territory</h3>
+            <div class="form-group">
+              <label>Name</label>
+              <input type="text" id="new-state-name" placeholder="e.g. New York" />
+            </div>
+            <div class="form-group">
+              <label>Abbreviation</label>
+              <input type="text" id="new-state-abbr" placeholder="e.g. NY" maxlength="3" />
+            </div>
+            <div class="form-group">
+              <label>Electoral Votes (for Presidential)</label>
+              <input type="number" id="new-state-ev" value="0" min="0" />
+            </div>
+            <div class="modal-actions">
+              <button class="btn-primary" id="confirm-add-state">Add</button>
+              <button class="btn-ghost" id="cancel-add-state">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ TAB: PARTIES & CANDIDATES ═══ -->
+      <div class="tab-panel" id="tab-parties">
+        <div class="panel-header">
+          <h1>Parties &amp; Candidates</h1>
+          <p>Define parties, their colors, and candidates per race</p>
+        </div>
+
+        <section class="config-section">
+          <h3>Parties</h3>
+          <div id="parties-list" class="tag-list"></div>
+          <div class="add-row">
+            <input type="text" id="new-party-name" placeholder="Party name" />
+            <input type="text" id="new-party-abbr" placeholder="Abbr" maxlength="5" />
+            <input type="color" id="new-party-color" value="#1a66cc" />
+            <button class="btn-secondary" id="add-party-btn">+ Add Party</button>
+          </div>
+        </section>
+
+        <section class="config-section">
+          <h3>Candidates by Race</h3>
+          <p class="section-hint">For State Legislature, candidates represent the party slate (no individual names needed).</p>
+
+          <div class="race-selector">
+            <label>Race Type:</label>
+            <select id="candidate-race-type">
+              <option value="president">President</option>
+              <option value="senate">Senate</option>
+              <option value="house">House of Representatives</option>
+              <option value="governor">Governor</option>
+              <option value="state_leg">State Legislature</option>
+            </select>
+            <label>State:</label>
+            <select id="candidate-state-select">
+              <option value="national">National (President)</option>
+            </select>
+          </div>
+
+          <div id="candidates-area" class="candidates-area">
+            <!-- Candidate rows injected -->
+          </div>
+          <button class="btn-secondary" id="add-candidate-btn">+ Add Candidate / Party</button>
+        </section>
+      </div>
+
+      <!-- ═══ TAB: MODIFIERS ═══ -->
+      <div class="tab-panel" id="tab-modifiers">
+        <div class="panel-header">
+          <h1>Race Modifiers</h1>
+          <p>Apply event-based adjustments to individual races. Each modifier shifts vote share relative to base partisanship.</p>
+        </div>
+
+        <div class="modifier-selector">
+          <label>Viewing modifiers for:</label>
+          <select id="modifier-race-type">
+            <option value="president">President</option>
+            <option value="senate">Senate</option>
+            <option value="house">House</option>
+            <option value="governor">Governor</option>
+            <option value="state_leg">State Legislature</option>
+          </select>
+          <select id="modifier-state-select">
+            <option value="national">National</option>
+          </select>
+        </div>
+
+        <div class="modifiers-panel">
+          <div id="modifiers-list" class="modifiers-list">
+            <!-- Modifier rows injected -->
+          </div>
+          <button class="btn-secondary" id="add-modifier-btn">+ Add Modifier</button>
+        </div>
+
+        <section class="config-section" style="margin-top:2rem">
+          <h3>Base Partisanship</h3>
+          <p class="section-hint">Set the baseline vote share for the selected race. These are the starting percentages before any modifiers are applied.</p>
+          <div id="base-partisanship-area" class="base-partisan-area">
+            <!-- Base partisanship sliders injected -->
+          </div>
+        </section>
+      </div>
+
+      <!-- ═══ TAB: CONTROL ═══ -->
+      <div class="tab-panel" id="tab-control">
+        <div class="panel-header">
+          <h1>Election Control</h1>
+          <p>Launch, manage, and end the live election</p>
+        </div>
+
+        <div class="control-grid">
+          <div class="control-card" id="election-status-card">
+            <h3>Current Status</h3>
+            <div class="big-status" id="big-status">NO ELECTION</div>
+            <div class="status-details" id="status-details">No election is currently live.</div>
+          </div>
+
+          <div class="control-card">
+            <h3>Launch Election</h3>
+            <p>This will make the election visible to all viewers. Ensure setup, states, candidates, and modifiers are configured first.</p>
+            <div class="action-row">
+              <button class="btn-primary big" id="launch-btn">🚀 Launch Election</button>
+              <button class="btn-danger big" id="end-btn" disabled>⛔ End Election</button>
+            </div>
+          </div>
+
+          <div class="control-card">
+            <h3>Live Adjustments</h3>
+            <p>These take effect on the next vote drop.</p>
+
+            <label>Player Vote Impact</label>
+            <div class="slider-row">
+              <input type="range" id="live-player-modifier" min="0" max="100" value="50" />
+              <span class="slider-val" id="live-player-modifier-val">50%</span>
+            </div>
+
+            <button class="btn-secondary" id="force-drop-btn">⚡ Force Vote Drop Now</button>
+          </div>
+
+          <div class="control-card full">
+            <h3>Vote Drop Log</h3>
+            <div id="drop-log" class="drop-log">
+              <p class="log-empty">No drops yet.</p>
+            </div>
+          </div>
+
+          <div class="control-card full">
+            <h3>Live Preview</h3>
+            <p>Current simulated totals (updates each drop)</p>
+            <div id="live-preview-table" class="preview-table"></div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script type="module" src="../js/firebase-config.js"></script>
+  <script type="module" src="../js/admin.js"></script>
+</body>
+</html>

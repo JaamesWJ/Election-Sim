@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Election Night — Live Results</title>
+  <link rel="stylesheet" href="css/viewer.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- STANDBY SCREEN -->
+  <div id="standby-screen" class="screen active">
+    <div class="standby-bg"></div>
+    <div class="standby-content">
+      <div class="network-bug">
+        <span class="bug-logo">★</span>
+        <span class="bug-name">ELECTION NETWORK</span>
+      </div>
+      <h1 class="standby-title">ELECTION NIGHT</h1>
+      <p class="standby-subtitle">No election is currently in progress.<br>Check back when polls open.</p>
+      <div class="standby-ticker">
+        <span class="ticker-label">ELECTION NETWORK</span>
+        <div class="ticker-scroll"><span id="standby-ticker-text">Awaiting election results · Stay tuned to Election Network for complete coverage · </span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LIVE ELECTION SCREEN -->
+  <div id="live-screen" class="screen">
+    <!-- Header -->
+    <header class="en-header">
+      <div class="header-left">
+        <div class="network-bug small">
+          <span class="bug-logo">★</span>
+          <span class="bug-name">ELECTION NETWORK</span>
+        </div>
+        <div class="header-meta">
+          <span id="header-election-name">General Election</span>
+          <span class="meta-sep">·</span>
+          <span id="header-date"></span>
+        </div>
+      </div>
+      <div class="header-center">
+        <div class="live-badge">
+          <span class="live-dot"></span>
+          LIVE
+        </div>
+        <div class="vote-progress-wrap">
+          <div class="vote-progress-label"><span id="pct-reporting">0%</span> reporting</div>
+          <div class="vote-progress-bar"><div id="pct-bar" class="pct-fill"></div></div>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="clock" id="live-clock"></div>
+        <div class="next-drop-wrap">
+          <span class="next-drop-label">Next update</span>
+          <span class="next-drop-timer" id="next-drop-timer">--:--</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Summary Bar -->
+    <div class="summary-bar" id="summary-bar">
+      <!-- Party seat totals injected here -->
+    </div>
+
+    <!-- Main layout -->
+    <div class="main-layout">
+      <!-- Map -->
+      <div class="map-panel">
+        <div class="map-controls">
+          <div class="race-tabs" id="race-tabs">
+            <!-- tabs injected -->
+          </div>
+          <div class="map-legend" id="map-legend"></div>
+        </div>
+        <div class="us-map-wrap">
+          <svg id="us-map" viewBox="0 0 960 600" xmlns="http://www.w3.org/2000/svg">
+            <!-- State paths injected by JS -->
+          </svg>
+          <div class="map-tooltip" id="map-tooltip"></div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <div class="sidebar-panel">
+        <div class="sidebar-header">
+          <h2 id="sidebar-race-title">Select a state</h2>
+          <button class="close-sidebar" id="close-sidebar" style="display:none">✕</button>
+        </div>
+        <div id="sidebar-content" class="sidebar-content">
+          <div class="sidebar-placeholder">
+            <span class="ph-icon">🗺️</span>
+            <p>Click any state on the map to see detailed results</p>
+          </div>
+        </div>
+        <!-- National Summary always visible at bottom -->
+        <div class="national-summary" id="national-summary"></div>
+      </div>
+    </div>
+
+    <!-- Bottom Ticker -->
+    <div class="bottom-ticker">
+      <span class="ticker-label">RESULTS</span>
+      <div class="ticker-track"><div class="ticker-inner" id="bottom-ticker-inner"></div></div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script type="module" src="js/firebase-config.js"></script>
+  <script type="module" src="js/viewer.js"></script>
+</body>
+</html>
